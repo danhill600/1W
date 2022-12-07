@@ -1,6 +1,7 @@
 // js-loc-callnumbers
 // A javascript class to normalize and perform various sorting options on
 // Library of Congress Call Numbers within a library institution.
+// ripped off from https://github.com/rayvoelker/js-loc-callnumbers
 
 // constructor
 function locCallClass() {
