@@ -2,22 +2,35 @@
 
 var scriptProperties = PropertiesService.getScriptProperties();
 
-function Otterize () { 
-   url = "https://librarycatalog2.ccc.edu/iii/sierra-api/v5/token";
+function Otterize() {
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    var menuEntries = [];
 
-   var options = {
-     "method" : "POST",
-     "headers" : {
-       "Authorization" : "Basic " + "\"" + cred + "\"",
-     }
-   };
+    menuEntries.push({name: "Produce Shelflist", functionName: "Cauterize"});
+    spreadsheet.addMenu("Inventory", menuEntries);
+    url = "https://librarycatalog2.ccc.edu/iii/sierra-api/v5/token";
 
-  var response = UrlFetchApp.fetch(url,options); 
-  var json_data = JSON.parse(response.getContentText());
-  var accesstoken = json_data.access_token;
-  
-  SpreadsheetApp.getActiveSheet().getRange('I2').setValue(accesstoken);
-  scriptProperties.setProperty('accesstoken', accesstoken)
+    var options = {
+        "method" : "POST",
+        "headers" : {
+        "Authorization" : "Basic " + "\"" + cred + "\"",
+        }
+    };
+
+    var response = UrlFetchApp.fetch(url,options);
+    var json_data = JSON.parse(response.getContentText());
+    var accesstoken = json_data.access_token;
+    spreadsheet.getRange('I2').setValue(accesstoken);
+
+    scriptProperties.setProperty('accesstoken', accesstoken)
+    scriptProperties.setProperty('spreadsheet', spreadsheet)
+
+}//end Otterize
+
+function Cauterize() {
+  var accesstoken = scriptProperties.getProperty('accesstoken');
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+ // var spreadsheet = scriptProperties.getProperty('spreadsheet');
 
   var url = 'https://librarycatalog2.ccc.edu:443/iii/sierra-api/v6/items/query?offset=0&limit=3000';
   var starting = 'ac 8.a59'
@@ -53,21 +66,23 @@ function Otterize () {
     var loc = new locCallClass;
     var out_cn = loc.returnNormLcCall(in_cn);
     if(json_data) {
-      SpreadsheetApp.getActiveSheet().getRange('C' + row).setValue(in_cn);
-      SpreadsheetApp.getActiveSheet().getRange('D' + row).setValue(out_cn)
-      SpreadsheetApp.getActiveSheet().getRange('E' + row).setValue(anotherjson_data.status.display);
-      SpreadsheetApp.getActiveSheet().getRange('F' + row).setValue(anotherjson_data.location.code);
-      SpreadsheetApp.getActiveSheet().getRange('G' + row).setValue('=\"' + Utilities.formatDate(new Date(), "GMT-4:00", "yyyy-MM-dd' 'HH:mm:ss") + '\"')
+      spreadsheet.getRange('C' + row).setValue(in_cn);
+      spreadsheet.getRange('D' + row).setValue(out_cn)
+      spreadsheet.getRange('E' + row).setValue(anotherjson_data.status.display);
+      spreadsheet.getRange('F' + row).setValue(anotherjson_data.location.code);
+      spreadsheet.getRange('G' + row).setValue('=\"' + Utilities.formatDate(new Date(), "GMT-4:00", "yyyy-MM-dd' 'HH:mm:ss") + '\"')
       
       var bibId = anotherjson_data.bibIds[0];
       var url = 'https://librarycatalog2.ccc.edu/iii/sierra-api/v5/bibs/' + bibId;
       var result = UrlFetchApp.fetch(url, options);
       var yetanotherjson_data = JSON.parse(result.getContentText());
-      SpreadsheetApp.getActiveSheet().getRange('A' + row).setValue(yetanotherjson_data.title);
-      SpreadsheetApp.getActiveSheet().getRange('B' + row).setValue(yetanotherjson_data.author);
+      spreadsheet.getRange('A' + row).setValue(yetanotherjson_data.title);
+      spreadsheet.getRange('B' + row).setValue(yetanotherjson_data.author);
     }//endif
     
    row++
   
   }//endforloop
-}//end Otterize
+    var range = spreadsheet.getDataRange();
+    range.sort(4);
+}//end Cauterize
