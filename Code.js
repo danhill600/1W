@@ -20,7 +20,7 @@ function Otterize() {
     var response = UrlFetchApp.fetch(url,options);
     var json_data = JSON.parse(response.getContentText());
     var accesstoken = json_data.access_token;
-    spreadsheet.getRange('I2').setValue(accesstoken);
+    //spreadsheet.getRange('I2').setValue(accesstoken);
 
     scriptProperties.setProperty('accesstoken', accesstoken)
     scriptProperties.setProperty('spreadsheet', spreadsheet)
@@ -30,18 +30,18 @@ function Otterize() {
 function Cauterize() {
   var accesstoken = scriptProperties.getProperty('accesstoken');
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
- // var spreadsheet = scriptProperties.getProperty('spreadsheet');
+
+  var starting = Browser.inputBox("Starting Call Number");
+  var ending = Browser.inputBox("Ending Call Number");
 
   var url = 'https://librarycatalog2.ccc.edu:443/iii/sierra-api/v6/items/query?offset=0&limit=3000';
-  var starting = 'ac 8.a59'
-  var ending = 'bl2755.3h58'
   var options = {
    "method" : "POST",
    "headers" : {
        "Authorization" : "Bearer " + accesstoken
      },
    "contentType" : "raw",
-   "payload" : '{"queries":[{"target":{"record":{"type":"item"},"id":79},"expr":{"op":"equals","operands":["trsta",""]}},"and",{"target":{"record":{"type":"bib"},"field":{"tag":"c"}},"expr":{"op":"between","operands":["ac 8.a59","bl2755.3h58"]}}]}'
+   "payload" : '{"queries":[{"target":{"record":{"type":"item"},"id":79},"expr":{"op":"equals","operands":["trsta",""]}},"and",{"target":{"record":{"type":"bib"},"field":{"tag":"c"}},"expr":{"op":"between","operands":["'+starting+'","'+ending+'"]}}]}'
   };
     
   let row = 2;
