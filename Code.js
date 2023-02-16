@@ -3,10 +3,12 @@ var scriptProperties = PropertiesService.getScriptProperties();
 
 function Otterize() {
     var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    var location = 'trsta'
     var menuEntries = [];
 
     menuEntries.push({name: "Input Range Manually", functionName: "Cauterize"});
     menuEntries.push({name: "Get info for ItemIds", functionName: "getInfo"});
+    menuEntries.push({name: "Change Location Code", functionName: "changeCode"});
     spreadsheet.addMenu("Inventory", menuEntries);
     url = "https://librarycatalog2.ccc.edu/iii/sierra-api/v5/token";
 
@@ -22,8 +24,9 @@ function Otterize() {
     var accesstoken = json_data.access_token;
     //spreadsheet.getRange('I2').setValue(accesstoken);
 
-    scriptProperties.setProperty('accesstoken', accesstoken)
-    scriptProperties.setProperty('spreadsheet', spreadsheet)
+    scriptProperties.setProperty('accesstoken', accesstoken);
+    scriptProperties.setProperty('spreadsheet', spreadsheet);
+    scriptProperties.setProperty('location', location);
 
 }//end Otterize
 
@@ -100,8 +103,9 @@ function onOddit(e) {
 
 function Cauterize() { // puts itemID's in a range into column H
   var accesstoken = scriptProperties.getProperty('accesstoken');
-
+  var location = scriptProperties.getProperty('location');
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
   if(!(spreadsheet.getActiveSheet().getName()==='shelflist')) {
     SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('shelflist'))
   }
@@ -116,7 +120,7 @@ function Cauterize() { // puts itemID's in a range into column H
        "Authorization" : "Bearer " + accesstoken
      },
    "contentType" : "raw",
-   "payload" : '{"queries":[{"target":{"record":{"type":"item"},"id":79},"expr":{"op":"equals","operands":["trsta",""]}},"and",{"target":{"record":{"type":"bib"},"field":{"tag":"c"}},"expr":{"op":"between","operands":["'+starting+'","'+ending+'"]}}]}'
+   "payload" : '{"queries":[{"target":{"record":{"type":"item"},"id":79},"expr":{"op":"equals","operands":["'+location+'",""]}},"and",{"target":{"record":{"type":"bib"},"field":{"tag":"c"}},"expr":{"op":"between","operands":["'+starting+'","'+ending+'"]}}]}'
   };
     
   let row = 2;
@@ -139,7 +143,7 @@ function getInfo() {
 
   var lr=spreadsheet.getLastRow()
 
-  for (i=2; i<lr; i++){
+  for (i=2; i<=lr; i++){
     if (( spreadsheet.getRange('A'+i).isBlank() ) && (i != 2)){
       var firstBlank = i-1;
       console.log(firstBlank)
@@ -187,3 +191,10 @@ function getInfo() {
     var range = spreadsheet.getDataRange();
     range.sort(4);
 }//end getInfo
+
+function changeCode() {
+
+  var location = Browser.inputBox("Input location code:");
+  scriptProperties.setProperty('location', location);
+
+}
