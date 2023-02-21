@@ -6,7 +6,8 @@ function Otterize() {
     var location = 'trsta'
     var menuEntries = [];
 
-    menuEntries.push({name: "Input Range Manually", functionName: "Cauterize"});
+    menuEntries.push({name: "Shelf List From User", functionName: "shelflistFromUser"});
+    menuEntries.push({name: "Shelf List From Inventory", functionName: "shelflistFromInventory"});
     menuEntries.push({name: "Get info for ItemIds", functionName: "getInfo"});
     menuEntries.push({name: "Change Location Code", functionName: "changeCode"});
     spreadsheet.addMenu("Inventory", menuEntries);
@@ -101,17 +102,17 @@ function onOddit(e) {
 }//end onOddit
 }//endrow if
 
-function Cauterize() { // puts itemID's in a range into column H
+function writeItemIds() { // puts itemID's in a range into column H
   var accesstoken = scriptProperties.getProperty('accesstoken');
   var location = scriptProperties.getProperty('location');
+  var starting  = scriptProperties.getProperty('starting');
+  var ending = scriptProperties.getProperty('ending');
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
   if(!(spreadsheet.getActiveSheet().getName()==='shelflist')) {
     SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('shelflist'))
   }
 
-  var starting = Browser.inputBox("Starting Call Number");
-  var ending = Browser.inputBox("Ending Call Number");
 
   var url = 'https://librarycatalog2.ccc.edu:443/iii/sierra-api/v6/items/query?offset=0&limit=3000';
   var options = {
@@ -131,7 +132,7 @@ function Cauterize() { // puts itemID's in a range into column H
     spreadsheet.getRange('I' + row).setValue(itemID);
     row++
   }//endforloop
-}//end Cauterize
+}//end writeItemIds
 
 function getInfo() {
   var accesstoken = scriptProperties.getProperty('accesstoken');
@@ -197,4 +198,33 @@ function changeCode() {
   var location = Browser.inputBox("Input location code:");
   scriptProperties.setProperty('location', location);
 
+}
+
+function shelflistFromInventory() {
+
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheets()[0];
+  if(!(spreadsheet.getActiveSheet().getName()==='shelflist')) {
+    SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('shelflist'))
+  }
+
+  var lr=sheet.getLastRow()
+  console.log(lr);
+
+  var starting = sheet.getRange(1, 5).getValue();
+  var ending = sheet.getRange(lr, 5).getValue();
+
+  scriptProperties.setProperty('starting', starting);
+  scriptProperties.setProperty('ending', ending);
+  writeItemIds();
+
+}
+
+function shelflistFromUser() {
+  var starting = Browser.inputBox("Starting Call Number");
+  var ending = Browser.inputBox("Ending Call Number");
+
+  scriptProperties.setProperty('starting', starting);
+  scriptProperties.setProperty('ending', ending);
+  writeItemIds();
 }
