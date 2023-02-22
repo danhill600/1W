@@ -10,6 +10,7 @@ function Otterize() {
     menuEntries.push({name: "Shelf List From Inventory", functionName: "shelflistFromInventory"});
     menuEntries.push({name: "Get info for ItemIds", functionName: "getInfo"});
     menuEntries.push({name: "Change Location Code", functionName: "changeCode"});
+    menuEntries.push({name: "Produce Reshelve Sheet", functionName: "runReshelve"});
     spreadsheet.addMenu("Inventory", menuEntries);
     url = "https://librarycatalog2.ccc.edu/iii/sierra-api/v5/token";
 
@@ -228,3 +229,102 @@ function shelflistFromUser() {
   scriptProperties.setProperty('ending', ending);
   writeItemIds();
 }
+
+function joinShelfListToInventory() {
+  /*
+  This function, joinShelfListToInventory, will do what equates to a LEFT OUTER JOIN on two sheets -
+  the shelflist (what is in the system, and what we expect to be on the shelf) and
+  the inventory (what physical items we scanned and found to be on the shelf).
+  This will tell us several things
+  1) What items are missing that we expect should be there
+  2) What order the items should go in, and how they should be placed on the shelf.
+  */
+
+  // check for inventory sheet and the shelflist sheet
+  var inventory_sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("inventory"),
+      shelflist_sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("shelflist");
+      //reshelve_sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("reshelve");
+
+  // if both those exist ...
+  if( inventory_sheet && shelflist_sheet ) {
+    // create reshelve sheet
+    var reshelve_sheet = 1;
+    // create and array for the reshelving sheet, shelflist, and inventory
+    var reshelve = [],
+        shelflist = [],
+        inventory = [],
+        shelflist_barcodes_range = shelflist_sheet.getRange('A:A').getValues(), //barcodes from shelflist
+        inventory_barcodes_range = inventory_sheet.getRange('A:A').getValues(); //barcodes from inventory
+
+    //Logger.log(shelflist_barcodes_range.length + ' ' + inventory_barcodes_range.length);
+
+    //fill the arrays ...
+    for (var i=0; i<shelflist_barcodes_range.length; i++) {
+      shelflist.push(shelflist_barcodes_range[i][0]);
+    }
+    for (var i=0; i<inventory_barcodes_range.length; i++) {
+      inventory.push(inventory_barcodes_range[i][0]);
+    }
+
+    //loop through the shelflist, and find the index of the bar code from inventory
+    for (var i=0; i<shelflist.length; i++) {
+      var match = inventory.indexOf(shelflist[i]);
+        reshelve.push(match);
+    } //end for
+
+    //remove the reshelve sheet (if it's there), and place a new one into the spreadsheet
+    var reshelve_sheet = SpreadsheetApp.getActive().getSheetByName('reshelve');
+    if(reshelve_sheet){
+      SpreadsheetApp.getActive().deleteSheet(reshelve_sheet);
+    }
+
+    //create the spreadsheet 'reshelve', and put it at the end of the other sheets.
+    // old sheet ...
+    //var reshelve_sheet = SpreadsheetApp.getActive().insertSheet('reshelve', SpreadsheetApp.getActive().getSheets().length);
+
+    // insert a new sheet, add it to the last index, and make sure the new sheet has the proper amount of rows ... using shelflist_sheet as our template
+    var reshelve_sheet = SpreadsheetApp.getActive().insertSheet('reshelve', SpreadsheetApp.getActive().getSheets().length, {template: shelflist_sheet});
+
+    /*reshelve_sheet.insertRows( Math.floor(reshelve_sheet.getMaxRows()),
+                              shelflist.length - Math.floor(reshelve_sheet.getMaxRows()) );
+    */
+
+    //start filling the reshelve sheet
+    var shelflist_range = shelflist_sheet.getRange( 'A1:D' + Math.floor(shelflist_sheet.getMaxRows()) ),
+        reshelve_range = reshelve_sheet.getRange( 'A1:E' + Math.floor(reshelve_sheet.getMaxRows()) ),
+        shelflist_range_values = shelflist_range.getValues();
+
+    if (shelflist_range_values.length != reshelve_range.getValues().length) {
+      Logger.log('length of reshelve sheet does not match the length of the shelflist');
+      return(0); // we can't / shouldn't go on if these don't match up
+    }
+
+    //we need to add the index value to the shelflist_range_values array ... do it here
+    for (var i=0; i<shelflist_range_values.length; i++) {
+      var position = i+1;
+
+      //item not found in shelflist, mark the row accordingly
+      if (reshelve[i] == -1){
+        //hopefully this shouldn't happen often, as the getRange is an expensive operation
+        reshelve_sheet.getRange('A' + position + ':E' + position).setBackground('LightCoral');
+        shelflist_range_values[i][4] = null;
+      }
+
+      else{
+        shelflist_range_values[i][4] = reshelve[i] + 1;
+      }
+
+    } //end for
+
+    //finally set values in the reshelve sheet
+    reshelve_range.setValues(shelflist_range_values);
+    reshelve_sheet.autoResizeColumn(2);
+
+  } //end if
+} //end function joinShelfListToInventory()
+
+function runReshelve() {
+  SpreadsheetApp.getUi()
+     .alert('Running Script to Produce "reshelve" sheet. \n\nClick OK to Continue');
+  joinShelfListToInventory();
+} //end function runReshelve
