@@ -130,7 +130,7 @@ function writeItemIds() { // puts itemID's in a range into column H
   var json_data = JSON.parse(result.getContentText());
   for (let i = json_data.entries.length -1; i >= 0; i--){
     let itemID = json_data.entries[i].link.split('/')[7].split("\"")[0];
-    spreadsheet.getRange('I' + row).setValue(itemID);
+    spreadsheet.getRange('J' + row).setValue(itemID);
     row++
   }//endforloop
 }//end writeItemIds
@@ -178,8 +178,9 @@ function getInfo() {
         spreadsheet.getRange('D' + i).setValue(in_cn);
         spreadsheet.getRange('E' + i).setValue(out_cn);
         spreadsheet.getRange('F' + i).setValue(anotherjson_data.status.display);
-        spreadsheet.getRange('G' + i).setValue(anotherjson_data.location.code);
-        spreadsheet.getRange('H' + i).setValue('=\"' + Utilities.formatDate(new Date(), "GMT-6:00", "yyyy-MM-dd' 'HH:mm:ss") + '\"');
+        spreadsheet.getRange('G' + i).setValue(anotherjson_data.status.duedate);
+        spreadsheet.getRange('H' + i).setValue(anotherjson_data.location.code);
+        spreadsheet.getRange('I' + i).setValue('=\"' + Utilities.formatDate(new Date(), "GMT-6:00", "yyyy-MM-dd' 'HH:mm:ss") + '\"');
 
         var bibId = anotherjson_data.bibIds[0];
         var url = 'https://librarycatalog2.ccc.edu/iii/sierra-api/v5/bibs/' + bibId;
@@ -191,7 +192,7 @@ function getInfo() {
     }//end first if
   }//endfor
     var range = spreadsheet.getDataRange();
-    range.sort(4);
+    range.sort(5);
 }//end getInfo
 
 function changeCode() {
