@@ -24,7 +24,7 @@ function Otterize() {
     var response = UrlFetchApp.fetch(url,options);
     var json_data = JSON.parse(response.getContentText());
     var accesstoken = json_data.access_token;
-    //spreadsheet.getRange('I2').setValue(accesstoken);
+    //spreadsheet.getRange('J2').setValue(accesstoken);
 
     scriptProperties.setProperty('accesstoken', accesstoken);
     scriptProperties.setProperty('spreadsheet', spreadsheet);
@@ -148,15 +148,15 @@ function getInfo() {
   for (i=2; i<=lr; i++){
     if (( spreadsheet.getRange('A'+i).isBlank() ) && (i != 2)){
       var firstBlank = i-1;
-      console.log(firstBlank)
+      console.log('firstblank: ' + firstBlank)
       break;
     }//end if
   }// end for loop
 
   for (i=firstBlank; i<lr+1;i++) {
-    if (!spreadsheet.getRange('I' + i).isBlank()){
+    if (!spreadsheet.getRange('J' + i).isBlank()){
 
-      var itemID = spreadsheet.getRange('I'+i).getValue();
+      var itemID = spreadsheet.getRange('J'+i).getValue();
       var url = 'https://librarycatalog2.ccc.edu/iii/sierra-api/v5/items/' + itemID;
 
       var options = {
@@ -192,7 +192,7 @@ function getInfo() {
     }//end first if
   }//endfor
     var range = spreadsheet.getDataRange();
-    range.sort(5);
+    spreadsheet.sort(5);
 }//end getInfo
 
 function changeCode() {
