@@ -62,7 +62,7 @@ function onOddit(e) {
     var entries = JSON.stringify(json_data.entries);
 
     var itemID = entries.split('/')[7].split("\"")[0];
-    e.range.offset(0,8).setValue(itemID);
+    e.range.offset(0,9).setValue(itemID);
 
     var url = 'https://librarycatalog2.ccc.edu/iii/sierra-api/v5/items/' + itemID;
 
@@ -83,8 +83,9 @@ function onOddit(e) {
       e.range.offset(0,3).setValue(in_cn);
       e.range.offset(0,4).setValue(out_cn)
       e.range.offset(0,5).setValue(json_data.status.display);
-      e.range.offset(0,6).setValue(json_data.location.code);
-      e.range.offset(0,7).setValue('=\"' + Utilities.formatDate(new Date(), "GMT-4:00", "yyyy-MM-dd' 'HH:mm:ss") + '\"')
+      e.range.offset(0,6).setValue(json_data.status.duedate);
+      e.range.offset(0,7).setValue(json_data.location.code);
+      e.range.offset(0,8).setValue('=\"' + Utilities.formatDate(new Date(), "GMT-4:00", "yyyy-MM-dd' 'HH:mm:ss") + '\"')
       //e.range.offset(0,6).setValue(json_data.bibIds[0])
 
       var bibId = json_data.bibIds[0];
