@@ -387,15 +387,10 @@ function shouldBeThere() {
   var lr=pasteSheet.getLastRow();
   for (i=2; i<=lr; i++){
     if (!(pasteSheet.getRange('F'+i).getValue() == 'Available') || !(pasteSheet.getRange('G'+i).isBlank())){
-    pasteSheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns()).setBackground('LightCoral');
+      pasteSheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns()).clearContent();
     }//endif
   }//endfor
-
-  for (i=lr; i>=1; i--){
-    if ( pasteSheet.getRange('A'+i).getBackground() == 'LightCoral'){
-      pasteSheet.deleteRow(i);
-    }//endif
-  }//endfor
+  pasteSheet.sort(1)
 //delete anything w a due date in the future
 //mark missing or at least get ready to export into a format that makes that easy for a bulk update in Sierra
 }//end function shouldBeThere
