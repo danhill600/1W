@@ -11,6 +11,7 @@ function Otterize() {
     menuEntries.push({name: "Get info for ItemIds", functionName: "getInfo"});
     menuEntries.push({name: "Change Location Code", functionName: "changeCode"});
     menuEntries.push({name: "Produce Reshelve Sheet", functionName: "runReshelve"});
+    menuEntries.push({name: "Should Be There But Aren't", functionName: "shouldBeThere"});
     spreadsheet.addMenu("Inventory", menuEntries);
     url = "https://librarycatalog2.ccc.edu/iii/sierra-api/v5/token";
 
@@ -251,7 +252,7 @@ function joinShelfListToInventory() {
   if( inventory_sheet && shelflist_sheet ) {
     // create reshelve sheet
     var reshelve_sheet = 1;
-    // create and array for the reshelving sheet, shelflist, and inventory
+    // create an array for the reshelving sheet, shelflist, and inventory
     var reshelve = [],
         shelflist = [],
         inventory = [],
@@ -330,3 +331,71 @@ function runReshelve() {
      .alert('Running Script to Produce "reshelve" sheet. \n\nClick OK to Continue');
   joinShelfListToInventory();
 } //end function runReshelve
+
+
+function shouldBeThere() {
+//paste in inventory
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheets()[0];
+  // check whether there's a sheet shouldBeThere
+  // make it active
+  if ( spreadsheet.getSheetByName('shouldBeThere') == null){
+    var shouldBeThere = SpreadsheetApp.getActive().insertSheet('shouldBeThere', SpreadsheetApp.getActive().getSheets().length);
+  } else {
+    if(!(spreadsheet.getActiveSheet().getName()==='shouldBeThere')) {
+      SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('shouldBeThere'));
+      }
+  }
+
+  copySheet = spreadsheet.getSheetByName('inventory');
+  pasteSheet = spreadsheet.getSheetByName('shouldBeThere');
+
+  pasteSheet.setFrozenRows(0);
+  pasteSheet.getRange(1,1,sheet.getMaxRows(), sheet.getMaxColumns()).clearContent();
+
+  var source = copySheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns());
+  var destination = pasteSheet.getRange(pasteSheet.getLastRow()+1,1);
+  source.copyTo(destination);
+  pasteSheet.setFrozenRows(1);
+//paste in shelf list
+
+  copySheet = spreadsheet.getSheetByName('shelflist');
+  pasteSheet = spreadsheet.getSheetByName('shouldBeThere');
+
+
+  var source = copySheet.getRange(2, 1, sheet.getMaxRows(), sheet.getMaxColumns());
+  var destination = pasteSheet.getRange(pasteSheet.getLastRow()+1,1);
+  source.copyTo(destination);
+//sort by A
+  pasteSheet.sort(1);
+//Dedupe
+  // Go down the pastsheet spreadsheet one by one, comparing barcodes
+  var lr=pasteSheet.getLastRow();
+  for (i=2; i<=lr; i++){
+    var minusone = i - 1;
+    if ( spreadsheet.getRange('A'+i).getValue() == spreadsheet.getRange('A'+ minusone).getValue()){
+  // if two barcodes match, delete them both
+      //pasteSheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns()).setBackground('LightCoral');
+      //pasteSheet.getRange(minusone ,1, 1, pasteSheet.getMaxColumns()).setBackground('LightCoral');
+      pasteSheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns()).clearContent();
+      pasteSheet.getRange(minusone ,1, 1, pasteSheet.getMaxColumns()).clearContent();
+      //console.log(i);
+    }//endif
+  }//endforloop
+  pasteSheet.sort(1)
+//delete anything w/ a status other than available
+  var lr=pasteSheet.getLastRow();
+  for (i=2; i<=lr; i++){
+    if (!(pasteSheet.getRange('F'+i).getValue() == 'Available') || !(pasteSheet.getRange('G'+i).isBlank())){
+    pasteSheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns()).setBackground('LightCoral');
+    }//endif
+  }//endfor
+
+  for (i=lr; i>=1; i--){
+    if ( pasteSheet.getRange('A'+i).getBackground() == 'LightCoral'){
+      pasteSheet.deleteRow(i);
+    }//endif
+  }//endfor
+//delete anything w a due date in the future
+//mark missing or at least get ready to export into a format that makes that easy for a bulk update in Sierra
+}//end function shouldBeThere
