@@ -12,6 +12,7 @@ function Otterize() {
     menuEntries.push({name: "Change Location Code", functionName: "changeCode"});
     menuEntries.push({name: "Produce Reshelve Sheet", functionName: "runReshelve"});
     menuEntries.push({name: "Should Be There But Aren't", functionName: "shouldBeThere"});
+    menuEntries.push({name: "There But Should Not Be", functionName: "shouldNotBeThere"});
     spreadsheet.addMenu("Inventory", menuEntries);
     url = "https://librarycatalog2.ccc.edu/iii/sierra-api/v5/token";
 
@@ -394,3 +395,43 @@ function shouldBeThere() {
 //delete anything w a due date in the future
 //mark missing or at least get ready to export into a format that makes that easy for a bulk update in Sierra
 }//end function shouldBeThere
+
+//checks for inventory items with status other than available, a due date,
+//or the wrong location code. Copies these items from the inventory sheet
+//to a new sheet named shouldNotBeThere
+function shouldNotBeThere() {
+  var location = scriptProperties.getProperty('location');
+
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheets()[0];
+  // check whether there's a sheet shouldNotBeThere
+  // make it active
+  if ( spreadsheet.getSheetByName('shouldNotBeThere') == null){
+    var shouldBeThere = SpreadsheetApp.getActive().insertSheet('shouldNotBeThere', SpreadsheetApp.getActive().getSheets().length);
+  } else {
+    if(!(spreadsheet.getActiveSheet().getName()==='shouldNotBeThere')) {
+      SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('shouldNotBeThere'));
+      }
+  }
+
+  copySheet = spreadsheet.getSheetByName('inventory');
+  pasteSheet = spreadsheet.getSheetByName('shouldNotBeThere');
+
+  pasteSheet.setFrozenRows(0);
+  pasteSheet.getRange(1,1,sheet.getMaxRows(), sheet.getMaxColumns()).clearContent();
+  var source = copySheet.getRange(1, 1, 1, pasteSheet.getMaxColumns());
+  var destination = pasteSheet.getRange(pasteSheet.getLastRow()+1,1);
+  source.copyTo(destination);
+  pasteSheet.setFrozenRows(1);
+
+  var lr=copySheet.getLastRow();
+  for (i=2; i<=lr; i++){
+    if (!(copySheet.getRange('F'+i).getValue() == 'Available') || !(copySheet.getRange('G'+i).isBlank()) || !(copySheet.getRange('H'+i).getValue() == location)){
+      var source = copySheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns());
+      var destination = pasteSheet.getRange(pasteSheet.getLastRow()+1,1);
+      source.copyTo(destination);
+      console.log(location)
+    }//endif
+  }//endfor
+
+  }//end shouldNotBeThere
