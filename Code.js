@@ -95,8 +95,20 @@ function onOddit(e) {
       var result = UrlFetchApp.fetch(url, options);
       var json_data = JSON.parse(result.getContentText());
       if(json_data) {
-        e.range.offset(0,1).setValue(json_data.title);
-        e.range.offset(0,2).setValue(json_data.author);
+
+        e.range.offset(0,11).setValue(json_data.title.length);
+        if (json_data.title.length > 0) {
+          e.range.offset(0,1).setValue(json_data.title);
+        }
+        else {
+          e.range.offset(0,1).setValue('none');
+        }//endtitleelse
+        if (json_data.author.length > 0) {
+          e.range.offset(0,2).setValue(json_data.author);
+        }
+        else {
+          e.range.offset(0,2).setValue('none');
+        }//endauthorelse
       }//end3rdif
     }//end2ndif
   }//end1stif
