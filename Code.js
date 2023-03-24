@@ -96,13 +96,14 @@ function onOddit(e) {
       var json_data = JSON.parse(result.getContentText());
       if(json_data) {
 
-        e.range.offset(0,11).setValue(json_data.title.length);
+        //e.range.offset(0,11).setValue(json_data.title.length);
         if (json_data.title.length > 0) {
           e.range.offset(0,1).setValue(json_data.title);
         }
         else {
           e.range.offset(0,1).setValue('none');
         }//endtitleelse
+        e.range.offset(0,11).setValue(json_data.author.length);
         if (json_data.author.length > 0) {
           e.range.offset(0,2).setValue(json_data.author);
         }
@@ -118,7 +119,7 @@ function onOddit(e) {
 }//end onOddit
 }//endrow if
 
-function writeItemIds() { // puts itemID's in a range into column H
+function writeItemIds() { // puts itemID's in a range into column J
   var accesstoken = scriptProperties.getProperty('accesstoken');
   var location = scriptProperties.getProperty('location');
   var starting  = scriptProperties.getProperty('starting');
@@ -129,25 +130,37 @@ function writeItemIds() { // puts itemID's in a range into column H
     SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('shelflist'))
   }
 
+  sheet = spreadsheet.getSheetByName('shelflist');
 
-  var url = 'https://librarycatalog2.ccc.edu:443/iii/sierra-api/v6/items/query?offset=0&limit=3000';
-  var options = {
-   "method" : "POST",
-   "headers" : {
-       "Authorization" : "Bearer " + accesstoken
-     },
-   "contentType" : "raw",
-   "payload" : '{"queries":[{"target":{"record":{"type":"item"},"id":79},"expr":{"op":"equals","operands":["'+location+'",""]}},"and",{"target":{"record":{"type":"bib"},"field":{"tag":"c"}},"expr":{"op":"between","operands":["'+starting+'","'+ending+'"]}}]}'
-  };
-    
-  let row = 2;
-  var result = UrlFetchApp.fetch(url, options);
-  var json_data = JSON.parse(result.getContentText());
-  for (let i = json_data.entries.length -1; i >= 0; i--){
-    let itemID = json_data.entries[i].link.split('/')[7].split("\"")[0];
-    spreadsheet.getRange('J' + row).setValue(itemID);
-    row++
-  }//endforloop
+  sheet.getRange(2,1,sheet.getLastRow(), sheet.getLastColumn()).clearContent();
+
+  //just debugging here...
+  spreadsheet.getRange('K2').setValue(starting);
+  spreadsheet.getRange('K3').setValue(ending);
+  spreadsheet.getRange('L2').setValue(location);
+
+
+    spreadsheet.getRange('M2').setValue('buhbingo');
+
+    var url = 'https://librarycatalog2.ccc.edu:443/iii/sierra-api/v6/items/query?offset=0&limit=3000';
+    //doing it first with bib callnos
+    var options = {
+    "method" : "POST",
+    "headers" : {
+        "Authorization" : "Bearer " + accesstoken
+      },
+    "contentType" : "raw",
+      "payload" : '{"queries":[[[{"target":{"record":{"type":"item"},"field":{"tag":"c"}},"expr":{"op":"greater_than_or_equal","operands":["'+starting+'",""]}},"and",{"target":{"record":{"type":"item"},"field":{"tag":"c"}},"expr":{"op":"less_than_or_equal","operands":["'+ending+'",""]}}],"or",[{"target":{"record":{"type":"bib"},"field":{"tag":"c"}},"expr":{"op":"greater_than_or_equal","operands":["'+starting+'",""]}},"and",{"target":{"record":{"type":"bib"},"field":{"tag":"c"}},"expr":{"op":"less_than_or_equal","operands":["'+ending+'",""]}}]],"and",{"target":{"record":{"type":"item"},"id":79},"expr":{"op":"equals","operands":["'+location+'",""]}},"and",{"target":{"record":{"type":"item"},"id":65},"expr":{"op":"not_exists","operands":["      ",""]}},"and",{"target":{"record":{"type":"item"},"id":88},"expr":{"op":"equals","operands":["-",""]}}]}'
+    };
+
+    var row = 2;
+    var result = UrlFetchApp.fetch(url, options);
+    var json_data = JSON.parse(result.getContentText());
+    for (let i = json_data.entries.length -1; i >= 0; i--){
+      let itemID = json_data.entries[i].link.split('/')[7].split("\"")[0];
+      spreadsheet.getRange('J' + row).setValue(itemID);
+      row++
+    }//endforloop
 }//end writeItemIds
 
 function getInfo() {
@@ -228,7 +241,7 @@ function shelflistFromInventory() {
   var lr=sheet.getLastRow()
   console.log(lr);
 
-  var starting = sheet.getRange(1, 5).getValue();
+  var starting = sheet.getRange(2, 5).getValue();
   var ending = sheet.getRange(lr, 5).getValue();
 
   scriptProperties.setProperty('starting', starting);
