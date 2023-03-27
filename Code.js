@@ -14,6 +14,9 @@ function Otterize() {
     menuEntries.push({name: "Produce Reshelve Sheet", functionName: "runReshelve"});
     menuEntries.push({name: "Should Be There But Aren't", functionName: "shouldBeThere"});
     menuEntries.push({name: "There But Should Not Be", functionName: "shouldNotBeThere"});
+    menuEntries.push({name: "Write Stats", functionName: "writeStats"});
+
+  
     spreadsheet.addMenu("Inventory", menuEntries);
     url = "https://librarycatalog2.ccc.edu/iii/sierra-api/v5/token";
 
@@ -542,3 +545,87 @@ function shouldNotBeThere() {
   }//endfor
 
   }//end shouldNotBeThere
+
+function writeStats() {
+    var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    var yourNewSheet = activeSpreadsheet.getSheetByName("Stats");
+
+    if (yourNewSheet != null) {
+        activeSpreadsheet.deleteSheet(yourNewSheet);
+    }
+
+    yourNewSheet = activeSpreadsheet.insertSheet();
+    yourNewSheet.setName("Stats");
+
+   activeSpreadsheet.getRange('A1').setValue('Location');
+   activeSpreadsheet.getRange('A2').setValue('Books Scanned');
+   activeSpreadsheet.getRange('A3').setValue('Duration');
+   activeSpreadsheet.getRange('A4').setValue('Books/Minute');
+   activeSpreadsheet.getRange('A5').setValue('Call Number Range');
+   activeSpreadsheet.getRange('A6').setValue('Missing');
+   activeSpreadsheet.getRange('A7').setValue('Cataloging Corrections');
+   activeSpreadsheet.getRange('A8').setValue('Unattached Barcodes');
+
+  var inventory_sheet = activeSpreadsheet.getSheetByName("inventory");
+  var location = inventory_sheet.getRange('H2').getValue();
+  activeSpreadsheet.getRange('B1').setValue(location);
+
+  var booksscanned = inventory_sheet.getLastRow() - 1;
+  activeSpreadsheet.getRange('B2').setValue(booksscanned);
+
+  var time1 = inventory_sheet.getRange('I2').getValue().slice(11);
+
+  var seconds1 = time1.slice(6);
+
+  var minutes1 = time1.slice(3,5);
+
+  var hours1 = time1.slice(0,2);
+
+  var totalseconds1 = parseInt(seconds1) + (parseInt(minutes1)*60) + (parseInt(hours1)*60*60)
+  console.log('total seconds 1: ' + totalseconds1);
+
+  var time2 = inventory_sheet.getRange('I' + (booksscanned +1)).getValue().slice(11);
+  //console.log(time2);
+
+  var seconds2 = time2.slice(6);
+
+  //console.log(seconds2);
+  var minutes2 = time2.slice(3,5);
+
+  //console.log(minutes2);
+  var hours2 = time2.slice(0,2);
+  //console.log(hours2);
+
+  var totalseconds2 = parseInt(seconds2) + (parseInt(minutes2)*60) + (parseInt(hours2)*60*60)
+  console.log('total seconds 2: ' + totalseconds2);
+
+  var secondsdiff = totalseconds2 - totalseconds1;
+  var minutesdiff  = Math.floor(secondsdiff/60);
+  activeSpreadsheet.getRange('B3').setValue(minutesdiff + ' minutes');
+
+  var booksamin = (booksscanned/minutesdiff);
+  activeSpreadsheet.getRange('B4').setValue(booksamin);
+
+  var starting = inventory_sheet.getRange('D2').getValue();
+  var ending = inventory_sheet.getRange('D' + inventory_sheet.getLastRow()).getValue();
+  activeSpreadsheet.getRange('B5').setValue(starting);
+  activeSpreadsheet.getRange('C5').setValue(ending);
+
+
+  var missing_sheet = activeSpreadsheet.getSheetByName("shouldBeThere");
+  var missing = missing_sheet.getLastRow()-1
+  activeSpreadsheet.getRange('B6').setValue(missing);
+
+  var miscataloged_sheet = activeSpreadsheet.getSheetByName("miscataloged");
+  var missing = miscataloged_sheet.getLastRow()-1
+  activeSpreadsheet.getRange('B7').setValue(missing);
+
+  var unattached_sheet = activeSpreadsheet.getSheetByName("unattached barcodes");
+  var unattached = unattached_sheet.getLastRow()-1
+  activeSpreadsheet.getRange('B8').setValue(unattached);
+
+
+
+
+
+}
