@@ -9,6 +9,7 @@ function Otterize() {
     menuEntries.push({name: "Shelf List From User", functionName: "shelflistFromUser"});
     menuEntries.push({name: "Shelf List From Inventory", functionName: "shelflistFromInventory"});
     menuEntries.push({name: "Get info for ItemIds", functionName: "getInfo"});
+    menuEntries.push({name: "Try Barcodes again", functionName: "tryAgain"});
     menuEntries.push({name: "Change Location Code", functionName: "changeCode"});
     menuEntries.push({name: "Produce Reshelve Sheet", functionName: "runReshelve"});
     menuEntries.push({name: "Should Be There But Aren't", functionName: "shouldBeThere"});
@@ -119,6 +120,7 @@ function onOddit(e) {
 }//end onOddit
 }//endrow if
 
+
 function writeItemIds() { // puts itemID's in a range into column J
   var accesstoken = scriptProperties.getProperty('accesstoken');
   var location = scriptProperties.getProperty('location');
@@ -162,6 +164,86 @@ function writeItemIds() { // puts itemID's in a range into column J
       row++
     }//endforloop
 }//end writeItemIds
+
+function tryAgain() {
+
+  var accesstoken = scriptProperties.getProperty('accesstoken');
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheets()[0];
+  if(!(spreadsheet.getActiveSheet().getName()==='inventory')) {
+    SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('inventory'))
+  }
+
+  var lr=sheet.getLastRow()
+  for (i=2; i<=lr; i++){
+    if (!(spreadsheet.getRange('A'+i).isBlank()) && (spreadsheet.getRange('B'+i).isBlank())){
+      var value = spreadsheet.getRange('A'+i).getValue();
+      var url = 'https://librarycatalog2.ccc.edu:443/iii/sierra-api/v6/items/query?offset=0&limit=1';
+
+      var options = {
+      "method" : "POST",
+      "headers" : {
+          "Authorization" : "Bearer " + accesstoken
+        },
+      "contentType" : "raw",
+      "payload" : '{"target":{"record":{"type":"item"},"field":{"tag":"b"}},"expr":{"op":"equals","operands":["' + value + '",""]}}'
+      };
+
+      var result = UrlFetchApp.fetch(url, options);
+      var json_data = JSON.parse(result.getContentText());
+    //    e.range.offset(0,1).setValue(json_data)
+      //make sure we have data back ...
+      if(json_data.entries) {
+        var entries = JSON.stringify(json_data.entries);
+        console.log(json_data);
+
+        var itemID = entries.split('/')[7].split("\"")[0];
+        spreadsheet.getRange('J' + i).setValue(itemID);
+
+        var url = 'https://librarycatalog2.ccc.edu/iii/sierra-api/v5/items/' + itemID;
+
+        var options = {
+      "method" : "GET",
+      "headers" : {
+          "Authorization" : "Bearer " + accesstoken
+        }
+        };
+        var result = UrlFetchApp.fetch(url, options);
+        var json_data = JSON.parse(result.getContentText());
+        var in_cn = json_data.callNumber;
+        var loc = new locCallClass;
+        var out_cn = loc.returnNormLcCall(in_cn);
+        //e.range.offset(0,1).setValue(result);
+        //e.range.offset(0,1)setValue(JSON.parse(result.getContextText()));
+        if(json_data) {
+          spreadsheet.getRange('D' + i).setValue(in_cn);
+          spreadsheet.getRange('E' + i).setValue(out_cn);
+          spreadsheet.getRange('F' + i).setValue(json_data.status.display);
+          spreadsheet.getRange('G' + i).setValue(json_data.status.duedate);
+          spreadsheet.getRange('H' + i).setValue(json_data.location.code);
+          spreadsheet.getRange('I' + i).setValue('=\"' + Utilities.formatDate(new Date(), "GMT-6:00", "yyyy-MM-dd' 'HH:mm:ss") + '\"');
+
+          var bibId = json_data.bibIds[0];
+          var url = 'https://librarycatalog2.ccc.edu/iii/sierra-api/v5/bibs/' + bibId;
+          var result = UrlFetchApp.fetch(url, options);
+          var yetanotherjson_data = JSON.parse(result.getContentText());
+          if (yetanotherjson_data.title.length > 0) {
+            spreadsheet.getRange('B' + i).setValue(yetanotherjson_data.title);
+          }
+          else{
+            spreadsheet.getRange('B' + i).setValue('none');
+          }
+          if (yetanotherjson_data.author.length > 0) {
+            spreadsheet.getRange('C' + i).setValue(yetanotherjson_data.author);
+          }
+          else{
+            spreadsheet.getRange('C' + i).setValue('none');
+          }
+          }//end3rdif
+        }//end2ndif
+      }//end1stif
+  }// end for loop
+}//end tryAgain
 
 function getInfo() {
   var accesstoken = scriptProperties.getProperty('accesstoken');
