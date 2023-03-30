@@ -15,6 +15,7 @@ function Otterize() {
     menuEntries.push({name: "Should Be There But Aren't", functionName: "shouldBeThere"});
     menuEntries.push({name: "There But Should Not Be", functionName: "shouldNotBeThere"});
     menuEntries.push({name: "Write Stats", functionName: "writeStats"});
+    menuEntries.push({name: "Copy Sheet", functionName: "copySheet"});
 
   
     spreadsheet.addMenu("Inventory", menuEntries);
@@ -117,9 +118,9 @@ function onOddit(e) {
       }//end3rdif
     }//end2ndif
   }//end1stif
-  else{
-    e.range.offset(0,1).setValue('buhbingo');
-    }
+ // else{
+//    e.range.offset(0,1).setValue('buhbingo');
+    //}
 }//end onOddit
 }//endrow if
 
@@ -145,7 +146,7 @@ function writeItemIds() { // puts itemID's in a range into column J
   spreadsheet.getRange('L2').setValue(location);
 
 
-    spreadsheet.getRange('M2').setValue('buhbingo');
+   // spreadsheet.getRange('M2').setValue('buhbingo');
 
     var url = 'https://librarycatalog2.ccc.edu:443/iii/sierra-api/v6/items/query?offset=0&limit=3000';
     //doing it first with bib callnos
@@ -624,8 +625,17 @@ function writeStats() {
   var unattached = unattached_sheet.getLastRow()-1
   activeSpreadsheet.getRange('B8').setValue(unattached);
 
+}
 
-
-
-
+function copySheet(){
+  var ss=SpreadsheetApp.getActiveSpreadsheet();
+  var date = new Date();
+  var date = date.toString().slice(0,15);
+  var copy=ss.copy(date + ' Scanning Session');
+  var copyId=copy.getId()
+  var sheetNumber=ss.getSheets().length;
+  for(var i=0; i<sheetNumber;i++)  {
+    var values=ss.getSheets()[i].getDataRange().getValues();
+    SpreadsheetApp.openById(copyId).getSheets()[i].getDataRange().setValues(values);
+  }
 }
