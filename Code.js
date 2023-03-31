@@ -108,7 +108,7 @@ function onOddit(e) {
         else {
           e.range.offset(0,1).setValue('none');
         }//endtitleelse
-        e.range.offset(0,11).setValue(json_data.author.length);
+        //e.range.offset(0,11).setValue(json_data.author.length);
         if (json_data.author.length > 0) {
           e.range.offset(0,2).setValue(json_data.author);
         }
@@ -197,7 +197,9 @@ function tryAgain() {
       var json_data = JSON.parse(result.getContentText());
     //    e.range.offset(0,1).setValue(json_data)
       //make sure we have data back ...
-      if(json_data.entries) {
+      if(parseInt(json_data.entries) > 0 ) {
+        console.log(json_data.entries);
+        console.log(parseInt(json_data.entries));
         var entries = JSON.stringify(json_data.entries);
         console.log(json_data);
 
@@ -244,7 +246,11 @@ function tryAgain() {
             spreadsheet.getRange('C' + i).setValue('none');
           }
           }//end3rdif
-        }//end2ndif
+        }     //end2ndif
+      else {
+        spreadsheet.getRange('B' + i).setValue('UNATTACHED BARCODE');
+      }
+
       }//end1stif
   }// end for loop
 }//end tryAgain
