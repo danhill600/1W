@@ -196,10 +196,12 @@ function tryAgain() {
       var result = UrlFetchApp.fetch(url, options);
       var json_data = JSON.parse(result.getContentText());
     //    e.range.offset(0,1).setValue(json_data)
+      //console.log(json_data);
+      //console.log('data totals: ' + json_data.total);
+      //console.log('as int: ' + parseInt(json_data.total));
+      //
       //make sure we have data back ...
-      if(parseInt(json_data.entries) > 0 ) {
-        console.log(json_data.entries);
-        console.log(parseInt(json_data.entries));
+      if(parseInt(json_data.total) > 0 ) {
         var entries = JSON.stringify(json_data.entries);
         console.log(json_data);
 
