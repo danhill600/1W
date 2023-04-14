@@ -12,6 +12,7 @@ function Otterize() {
     menuEntries.push({name: "Try Barcodes again", functionName: "tryAgain"});
     menuEntries.push({name: "Change Location Code", functionName: "changeCode"});
     menuEntries.push({name: "Produce Reshelve Sheet", functionName: "runReshelve"});
+    menuEntries.push({name: "Find Misshelvings", functionName: "findMisshelvings"});
     menuEntries.push({name: "Should Be There But Aren't", functionName: "shouldBeThere"});
     menuEntries.push({name: "There But Should Not Be", functionName: "shouldNotBeThere"});
     menuEntries.push({name: "Write Stats", functionName: "writeStats"});
@@ -647,3 +648,56 @@ function copySheet(){
     SpreadsheetApp.openById(copyId).getSheets()[i].getDataRange().setValues(values);
   }
 }
+
+function findMisshelvings(){
+
+  //initializing stuff
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheetByName('inventory');
+  // check whether there's a sheet shouldBeThere
+  // make it active
+  if ( spreadsheet.getSheetByName('shelflist') == null){
+    SpreadsheetApp.getUi()
+      .alert('Run the Shelflist Functions first, please.');
+    return;
+  }
+
+  var inventory_sheet = spreadsheet.getSheetByName("inventory"),
+      shelflist_sheet = spreadsheet.getSheetByName("shelflist");
+
+
+    // create an array for the reshelving sheet, shelflist, and inventory
+  var shelflist = [],
+      inventory = [],
+      shelflist_barcodes_range = shelflist_sheet.getRange('A:A').getValues(), //barcodes from shelflist
+      inventory_barcodes_range = inventory_sheet.getRange('A:A').getValues(); //barcodes from inventory
+
+    //fill the arrays ...
+    for (var i=0; i<shelflist_barcodes_range.length; i++) {
+      shelflist.push(shelflist_barcodes_range[i][0]);
+    }
+    for (var i=0; i<inventory_barcodes_range.length; i++) {
+      inventory.push(inventory_barcodes_range[i][0]);
+    }
+
+  //for row in inventory sheet search for the item's value in the barcode field in the shelflist sheet and then write the shelflist-sheet rown number into the inventory sheet row in column K (11)
+  var lr=inventory_sheet.getLastRow();
+  for (i=2; i<=lr; i++){
+    var inventory_barcode = inventory_sheet.getRange(i,1,1,1).getValue();
+    console.log('inventory_barcode: ' + inventory_barcode);
+    for (j=2; j<=shelflist_sheet.getLastRow();j++) {
+      var shelflist_barcode = shelflist_sheet.getRange(j,1,1,1).getValue();
+      //console.log('shelflist_barcode: ' + shelflist_barcode);
+      if ( shelflist_barcode == inventory_barcode){
+        //console.log("nice, " + shelflist_barcode + " and " + inventory_barcode + " match.");
+        var shelflist_index = j-1;
+        //console.log("so the shelflist_index is " + shelflist_index);
+        break;
+      } else if (j == shelflist_sheet.getLastRow()){
+        var shelflist_index = 'NO MATCH';
+      }//end else if
+    }//end second for
+   // shelflist_index in column k of inventory
+    inventory_sheet.getRange('K' + i).setValue(shelflist_index);
+  }//end first for
+}//end findMisshelvings
