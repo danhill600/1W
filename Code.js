@@ -684,20 +684,8 @@ function findMisshelvings(){
   var lr=inventory_sheet.getLastRow();
   for (i=2; i<=lr; i++){
     var inventory_barcode = inventory_sheet.getRange(i,1,1,1).getValue();
-    console.log('inventory_barcode: ' + inventory_barcode);
-    for (j=2; j<=shelflist_sheet.getLastRow();j++) {
-      var shelflist_barcode = shelflist_sheet.getRange(j,1,1,1).getValue();
-      //console.log('shelflist_barcode: ' + shelflist_barcode);
-      if ( shelflist_barcode == inventory_barcode){
-        //console.log("nice, " + shelflist_barcode + " and " + inventory_barcode + " match.");
-        var shelflist_index = j-1;
-        //console.log("so the shelflist_index is " + shelflist_index);
-        break;
-      } else if (j == shelflist_sheet.getLastRow()){
-        var shelflist_index = 'NO MATCH';
-      }//end else if
-    }//end second for
-   // shelflist_index in column k of inventory
+    var shelflist_index = shelflist.indexOf(inventory_barcode)
+  // shelflist_index in column k of inventory
     inventory_sheet.getRange('K' + i).setValue(shelflist_index);
-  }//end first for
+  }//end for
 }//end findMisshelvings
