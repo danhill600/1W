@@ -686,15 +686,23 @@ function findMisshelvings(){
     var minusone = i-1;
 
     var inventory_barcode = inventory_sheet.getRange(i,1,1,1).getValue();
-    var shelflist_index = shelflist.indexOf(inventory_barcode)
+    var shelflist_index = shelflist.indexOf(inventory_barcode);
 
   // shelflist_index in column k of inventory
+    if (shelflist_index == -1) {
+      var shelflist_index = 'no match';
+    }
     inventory_sheet.getRange('K' + i).setValue(shelflist_index);
     var current_value = parseInt(inventory_sheet.getRange('K' + i).getValue());
+    if (shelflist_index !== 'no match'){
     var previous_value = parseInt(inventory_sheet.getRange('K' + minusone).getValue());
-    console.log('current value: ' + current_value );
-    console.log('previous value: ' + previous_value );
-    if ( current_value < previous_value) {
+    }
+    //console.log('current value: ' + current_value );
+    //console.log('previous value: ' + previous_value );
+    var current_title = inventory_sheet.getRange('B' + i).getValue();
+    var previous_title = inventory_sheet.getRange('B' + minusone).getValue();
+
+    if ( (current_value < previous_value) && current_title !== previous_title ) {
       console.log("bingo misshelvo");
       inventory_sheet.getRange('A' + i + ':K' + i).setBackground('Yellow');
     }//endif
