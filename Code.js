@@ -550,6 +550,7 @@ function copySheet(){
 
 function hiliteMisshelvings(){
 
+
   //initializing stuff
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getSheetByName('inventory');
@@ -557,12 +558,16 @@ function hiliteMisshelvings(){
   // make it active
   if ( spreadsheet.getSheetByName('shelflist') == null){
     SpreadsheetApp.getUi()
-      .alert('Run the Shelflist Functions first, please.');
+      .alert('Run a Shelflist Function first, please.');
     return;
   }
 
   var inventory_sheet = spreadsheet.getSheetByName("inventory"),
       shelflist_sheet = spreadsheet.getSheetByName("shelflist");
+
+  inventory_sheet.getRange(1,1,inventory_sheet.getLastRow(),inventory_sheet.getLastColumn()).setBackground(null);
+  inventory_sheet.getRange(2,11,inventory_sheet.getLastRow()).clear();
+
 
 
     // create an array for the reshelving sheet, shelflist, and inventory
@@ -579,7 +584,6 @@ function hiliteMisshelvings(){
       inventory.push(inventory_barcodes_range[i][0]);
     }
 
-  //for row in inventory sheet search for the item's value in the barcode field in the shelflist sheet and then write the shelflist-sheet rown number into the inventory sheet row in column K (11)
   var lr=inventory_sheet.getLastRow();
   for (i=2; i<=lr; i++){
     var minusone = i-1;
@@ -587,7 +591,6 @@ function hiliteMisshelvings(){
     var inventory_barcode = inventory_sheet.getRange(i,1,1,1).getValue();
     var shelflist_index = shelflist.indexOf(inventory_barcode);
 
-  // shelflist_index in column k of inventory
     if (shelflist_index == -1) {
       var shelflist_index = 'no match';
     }
