@@ -474,6 +474,7 @@ function writeStats() {
    activeSpreadsheet.getRange('A6').setValue('Missing');
    activeSpreadsheet.getRange('A7').setValue('Cataloging Corrections');
    activeSpreadsheet.getRange('A8').setValue('Unattached Barcodes');
+   activeSpreadsheet.getRange('A9').setValue('Found Items');
 
   var inventory_sheet = activeSpreadsheet.getSheetByName("inventory");
   var location = inventory_sheet.getRange('H2').getValue();
@@ -532,6 +533,10 @@ function writeStats() {
   var unattached_sheet = activeSpreadsheet.getSheetByName("unattached barcodes");
   var unattached = unattached_sheet.getLastRow()-1
   activeSpreadsheet.getRange('B8').setValue(unattached);
+
+  var unattached_sheet = activeSpreadsheet.getSheetByName("found!");
+  var unattached = unattached_sheet.getLastRow()-1
+  activeSpreadsheet.getRange('B9').setValue(unattached);
 
 }
 
