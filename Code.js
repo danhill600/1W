@@ -410,7 +410,7 @@ function shouldBeThere() {
       pasteSheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns()).clearContent();
     }//endif
   }//endfor
-  pasteSheet.sort(1)
+  pasteSheet.sort(4)
 //delete anything w a due date in the future
 //mark missing or at least get ready to export into a format that makes that easy for a bulk update in Sierra
 }//end function shouldBeThere
@@ -449,7 +449,7 @@ function shouldNotBeThere() {
       var source = copySheet.getRange(i, 1 ,1, pasteSheet.getMaxColumns());
       var destination = pasteSheet.getRange(pasteSheet.getLastRow()+1,1);
       source.copyTo(destination);
-      console.log(location)
+      //console.log(location)
     }//endif
   }//endfor
 
