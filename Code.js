@@ -14,8 +14,10 @@ function Otterize() {
     menuEntries.push({name: "Hi-Lite Misshelvings", functionName: "hiliteMisshelvings"});
     menuEntries.push({name: "ID Missing Items", functionName: "shouldBeThere"});
     menuEntries.push({name: "ID Items w wrong status or location", functionName: "shouldNotBeThere"});
+    menuEntries.push({name: "Unattached Barcodes", functionName: "unattachedBarcodes"});
     menuEntries.push({name: "Write Stats", functionName: "writeStats"});
     menuEntries.push({name: "Copy Sheet", functionName: "copySheet"});
+
 
   
     spreadsheet.addMenu("Inventory", menuEntries);
@@ -573,9 +575,7 @@ function hiliteMisshelvings(){
   inventory_sheet.getRange(1,1,inventory_sheet.getLastRow(),inventory_sheet.getLastColumn()).setBackground(null);
   inventory_sheet.getRange(2,11,inventory_sheet.getLastRow()).clear();
 
-
-
-    // create an array for the reshelving sheet, shelflist, and inventory
+  // create an array for the reshelving sheet, shelflist, and inventory
   var shelflist = [],
       inventory = [],
       shelflist_barcodes_range = shelflist_sheet.getRange('A:A').getValues(), //barcodes from shelflist
@@ -610,9 +610,38 @@ function hiliteMisshelvings(){
     var previous_title = inventory_sheet.getRange('B' + minusone).getValue();
 
     if ( (current_value < previous_value) && current_title !== previous_title ) {
-      console.log("bingo misshelvo");
+      //console.log("bingo misshelvo");
       inventory_sheet.getRange('A' + i + ':K' + i).setBackground('Yellow');
     }//endif
   }//end for
 }//end findMisshelvings
 
+function unattachedBarcodes(){
+
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  // make it active
+  if ( spreadsheet.getSheetByName('unattached barcodes') == null){
+    var unattached_sheet = SpreadsheetApp.getActive().insertSheet('unattached barcodes', SpreadsheetApp.getActive().getSheets().length);
+  } else {
+    if(!(spreadsheet.getActiveSheet().getName()==='unattached barcodes')) {
+      SpreadsheetApp.setActiveSheet(spreadsheet.getSheetByName('unattached barcodes'));
+      }
+  }
+
+  copySheet = spreadsheet.getSheetByName('inventory');
+  pasteSheet = spreadsheet.getSheetByName('unattached barcodes');
+  pasteSheet.getRange(1,1,pasteSheet.getLastRow(), pasteSheet.getLastColumn()).clearContent();
+
+
+  lr = copySheet.getLastRow();
+  for (i=2; i<=lr; i++){
+    if (copySheet.getRange('B'+i).getValue() == 'UNATTACHED BARCODE'){
+      var source = copySheet.getRange('A' + (i-1) + ':K' + i);
+      var destination = pasteSheet.getRange(pasteSheet.getLastRow()+2,1);
+      source.copyTo(destination);
+      pasteSheet.getRange('A' + pasteSheet.getLastRow() + ':K' + pasteSheet.getLastRow()).setBackground('Yellow');
+      copySheet.deleteRow(i);
+      //pasteSheet.getRange('A' + String((i+2)) + ':K' + String((i+2))).setBackground('Yellow');
+    }//endif
+  }//endfor
+}//end unnattachedBarcodes
